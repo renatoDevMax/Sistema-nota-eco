@@ -35,6 +35,8 @@ interface StatusPanelProps {
   email: string;
   onProcessedFoldersChange: (count: number) => void;
   clientData: Record<string, ClientData>;
+  message: string;
+  subject: string;
 }
 
 interface Statistics {
@@ -52,6 +54,8 @@ const StatusPanel = ({
   email,
   onProcessedFoldersChange,
   clientData,
+  message,
+  subject,
 }: StatusPanelProps) => {
   const [timeLeft, setTimeLeft] = useState(30);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -148,7 +152,9 @@ const StatusPanel = ({
           .filter(Boolean)
           .join(", ");
 
-        const message = `Prezado(a) cliente,\n\nSegue em anexo as notas fiscais ${invoiceNumbers}.\n\nAtenciosamente,\nEco Clean`;
+        const personalizedMessage = message
+          .replace(/{cliente\.nome}/g, folder.name)
+          .replace(/{numeros_notas}/g, invoiceNumbers);
 
         const attachments = await Promise.all(
           folder.files.map(async (file) => {
@@ -165,11 +171,15 @@ const StatusPanel = ({
         const targetEmail =
           (folderClientData?.checked && folderClientData?.email) || email;
 
+        const personalizedSubject = subject
+          .replace(/{cliente\.nome}/g, folder.name)
+          .replace(/{numeros_notas}/g, invoiceNumbers);
+
         await sendEmail({
           to: targetEmail,
-          subject: `Notas Fiscais - ${folder.name}`,
-          text: message,
-          html: message.replace(/\n/g, "<br>"),
+          subject: personalizedSubject || `Notas Fiscais - ${folder.name}`,
+          text: personalizedMessage,
+          html: personalizedMessage.replace(/\n/g, "<br>"),
           attachments,
         });
 
@@ -204,6 +214,8 @@ const StatusPanel = ({
     onProcessedFoldersChange,
     isPlaying,
     clientData,
+    message,
+    subject,
   ]);
 
   useEffect(() => {

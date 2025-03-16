@@ -94,6 +94,8 @@ export default function Home() {
                 email={email}
                 onProcessedFoldersChange={handleProcessedFoldersChange}
                 clientData={clientData}
+                message={message}
+                subject={subject}
               />
             </div>
           </div>
